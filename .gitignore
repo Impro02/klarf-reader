@@ -1,0 +1,103 @@
+﻿backend/__pycache__
+*.pyc
+backend/tmp/configs.dmp
+backend/dream.code-workspace
+backend/server_werkzeug.log
+backend/.vscode/settings.json
+frontend/.vscode/settings.json
+frontend/package-lock.json
+backend/workspace.code-workspace
+
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# compiled output
+frontend/dist
+frontend/tmp
+frontend/out-tsc
+# Only exists if Bazel was run
+frontend/bazel-out
+
+# dependencies
+*/node_modules
+
+# profiling files
+frontend/chrome-profiler-events*.json
+frontend/speed-measure-plugin*.json
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# misc
+frontend/.sass-cache
+frontend/connect.lock
+frontend/coverage
+frontend/libpeerconnection.log
+frontend/npm-debug.log
+frontend/yarn-error.log
+frontend/testem.log
+frontend/typings
+
+# System Files
+.DS_Store
+Thumbs.db
+
+HELP.md
+backend/target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+backend/.apt_generated
+backend/.classpath
+backend/.factorypath
+backend/.project
+backend/.settings
+backend/.springBeans
+backend/.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+backend/nbproject/private/
+backend/nbbuild/
+backend/dist/
+backend/nbdist/
+backend/.nb-gradle/
+backend/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Backend ###
+*.pyc
+backend/configs.dmp
+backend/tmp/configs.dmp
+.vscode/launch.json
+
+### Documentation ###
+documentation/dream/site/
+
+### Logs ###
+logs
+frontend/.vscode/settings.json
+frontend/.vscode/settings.json
+
+backend/fonts/*.pkl
