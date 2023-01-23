@@ -1,103 +1,117 @@
-﻿backend/__pycache__
-*.pyc
-backend/tmp/configs.dmp
-backend/dream.code-workspace
-backend/server_werkzeug.log
-backend/.vscode/settings.json
-frontend/.vscode/settings.json
-frontend/package-lock.json
-backend/workspace.code-workspace
-
-# See http://help.github.com/ignore-files/ for more about ignoring files.
-
-# compiled output
-frontend/dist
-frontend/tmp
-frontend/out-tsc
-# Only exists if Bazel was run
-frontend/bazel-out
-
-# dependencies
-*/node_modules
-
-# profiling files
-frontend/chrome-profiler-events*.json
-frontend/speed-measure-plugin*.json
-
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
+﻿# IDE - VSCode
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history/*
 
-# misc
-frontend/.sass-cache
-frontend/connect.lock
-frontend/coverage
-frontend/libpeerconnection.log
-frontend/npm-debug.log
-frontend/yarn-error.log
-frontend/testem.log
-frontend/typings
 
-# System Files
-.DS_Store
-Thumbs.db
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-HELP.md
-backend/target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# C extensions
+*.so
 
-### STS ###
-backend/.apt_generated
-backend/.classpath
-backend/.factorypath
-backend/.project
-backend/.settings
-backend/.springBeans
-backend/.sts4-cache
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
 
-### NetBeans ###
-backend/nbproject/private/
-backend/nbbuild/
-backend/dist/
-backend/nbdist/
-backend/.nb-gradle/
-backend/build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
 
-### Backend ###
-*.pyc
-backend/configs.dmp
-backend/tmp/configs.dmp
-.vscode/launch.json
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
 
-### Documentation ###
-documentation/dream/site/
+# Translations
+*.mo
+*.pot
 
-### Logs ###
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+documentations/site
+
+# mypy
+.mypy_cache/
+
+.log
+.log.*
 logs
-frontend/.vscode/settings.json
-frontend/.vscode/settings.json
+.vs
 
-backend/fonts/*.pkl
+
+
+
