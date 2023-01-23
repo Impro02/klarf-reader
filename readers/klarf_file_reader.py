@@ -1,7 +1,6 @@
 from pathlib import Path
 import re
 from typing import List, Tuple
-import numpy as np
 from models.klarf_content import (
     Defect,
     DiePitch,
