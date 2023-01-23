@@ -1,10 +1,12 @@
 from pathlib import Path
 import re
 from typing import List, Tuple
-from models.klarf_content import (
+
+from ..models.klarf_content import (
     Defect,
     DiePitch,
     KlarfContent,
+    SampleCenterLocation,
     SamplePlanTest,
     SetupId,
     Summary,
@@ -40,6 +42,7 @@ def readKlarf(klarf: Path) -> KlarfContent:
 
             if line.lstrip().lower().startswith("resulttimestamp"):
                 result_timestamp = line[16:35].rstrip(";")
+                continue
 
             if line.lstrip().lower().startswith("lotid"):
                 lot_id = line.split('"')[1]
@@ -66,7 +69,7 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 continue
 
             if line.lstrip().lower().startswith("orientationmarklocation"):
-                oml = line.split()[1].split(";")[0]
+                orientation_mark_location = line.rstrip(";").split()[1]
                 continue
 
             if line.lstrip().lower().startswith("diepitch"):
@@ -74,12 +77,17 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 die_pitch = DiePitch(
                     x=float(die_pitch_value[1]), y=float(die_pitch_value[2])
                 )
+                continue
 
             if line.lstrip().lower().startswith("samplecenterlocation"):
                 sample_center_location_value = line.rstrip(";").split()
-
-                sample_center_location_x = float(sample_center_location_value[1])
-                sample_center_location_y = float(sample_center_location_value[2])
+                sample_center_location = SampleCenterLocation(
+                    x=float(
+                        sample_center_location_value[1],
+                        y=float(sample_center_location_value[2]),
+                    )
+                )
+                continue
 
             if line.lstrip().lower().startswith("waferid"):
                 wafer_id = line.split('"')[1]
@@ -143,8 +151,7 @@ def readKlarf(klarf: Path) -> KlarfContent:
 
                     x, y = convert_coordinates(
                         die_pitch=die_pitch,
-                        sample_center_location_x=sample_center_location_x,
-                        sample_center_location_y=sample_center_location_y,
+                        sample_center_location=sample_center_location,
                         xrel=x_rel,
                         yrel=y_rel,
                         xindex=x_index,
@@ -198,12 +205,12 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 has_sample_test_plan = True
             if next_line_has_sample_test_plan:
                 if line.startswith(" "):
-                    sample_test_plan_value = line.strip().split()
+                    sample_test_plan_value = line.strip().rstrip(";").split()
 
                     x = int(sample_test_plan_value[0])
                     sample_plan_test_x.append(x)
 
-                    y = int(sample_test_plan_value[1].rstrip(";"))
+                    y = int(sample_test_plan_value[1])
                     sample_plan_test_y.append(y)
                 if line.rstrip().endswith(";"):
                     next_line_has_sample_test_plan = False
@@ -217,7 +224,7 @@ def readKlarf(klarf: Path) -> KlarfContent:
         sample_size=sample_size,
         step_id=step_id,
         layer=layer,
-        oml=oml,
+        oml=orientation_mark_location,
         die_pitch=die_pitch,
         setup_id=setup_id,
         has_sample_test_plan=has_sample_test_plan,
@@ -228,8 +235,7 @@ def readKlarf(klarf: Path) -> KlarfContent:
 
 def convert_coordinates(
     die_pitch: DiePitch,
-    sample_center_location_x: float,
-    sample_center_location_y: float,
+    sample_center_location: SampleCenterLocation,
     xrel: float,
     yrel: float,
     xindex: int,
@@ -250,7 +256,7 @@ def convert_coordinates(
         Tuple[float, float]: the x and y coordinates
     """
 
-    x = xindex * die_pitch.x + xrel - sample_center_location_x
-    y = -(yindex * die_pitch.y + yrel - sample_center_location_y)
+    x = xindex * die_pitch.x + xrel - sample_center_location.x
+    y = -(yindex * die_pitch.y + yrel - sample_center_location.y)
 
     return x, y

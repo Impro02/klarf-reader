@@ -1,8 +1,5 @@
-from ast import Tuple
+from typing import List, Tuple
 from dataclasses import dataclass, field
-from typing import List
-
-import numpy as np
 
 
 @dataclass
@@ -13,6 +10,12 @@ class SetupId:
 
 @dataclass
 class DiePitch:
+    x: float
+    y: float
+
+
+@dataclass
+class SampleCenterLocation:
     x: float
     y: float
 
@@ -35,7 +38,7 @@ class Defect:
     area: float
     roughbin: int
     finebin: int
-    point: Tuple(float, float) = field(default_factory=lambda: [])
+    point: Tuple[float, float] = field(default_factory=lambda: [])
 
 
 @dataclass

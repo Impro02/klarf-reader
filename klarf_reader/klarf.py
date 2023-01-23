@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from models.klarf_content import KlarfContent
+from .models.klarf_content import KlarfContent
 
-from readers import klarf_file_reader
+from .readers import klarf_file_reader
 
 
 class Klarf:
