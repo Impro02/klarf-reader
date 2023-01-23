@@ -82,16 +82,13 @@ def readKlarf(klarf: Path) -> KlarfContent:
             if line.lstrip().lower().startswith("samplecenterlocation"):
                 sample_center_location_value = line.rstrip(";").split()
                 sample_center_location = SampleCenterLocation(
-                    x=float(
-                        sample_center_location_value[1],
-                        y=float(sample_center_location_value[2]),
-                    )
+                    x=float(sample_center_location_value[1]),
+                    y=float(sample_center_location_value[2]),
                 )
                 continue
 
             if line.lstrip().lower().startswith("waferid"):
                 wafer_id = line.split('"')[1]
-
                 continue
 
             if line.lstrip().lower().startswith("defectrecordspec"):
@@ -123,9 +120,7 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 line.rstrip().endswith(";")
             ):
                 next_line_has_coords = True
-
                 defects = []
-
                 continue
 
             if next_line_has_coords:

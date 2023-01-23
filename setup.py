@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="klarf-reader",
-    version="0.1.4",
+    version="0.1.5",
     packages=["klarf_reader", "klarf_reader.models", "klarf_reader.readers"],
     install_requires=[
         "numpy",
