@@ -4,6 +4,7 @@ from typing import List, Tuple
 
 from ..models.klarf_content import (
     Defect,
+    DieOrigin,
     DiePitch,
     KlarfContent,
     SampleCenterLocation,
@@ -34,6 +35,7 @@ def readKlarf(klarf: Path) -> KlarfContent:
         for line in f:
             line: str = line.rstrip("\n")
             if line.lstrip().lower().startswith("filetimestamp"):
+                file_timestamp = line[14:33].rstrip(";")
                 continue
 
             if line.lstrip().lower().startswith("inspectionstationid"):
@@ -49,8 +51,8 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 continue
 
             if line.lstrip().lower().startswith("samplesize"):
-                sample_size = line.split(" ")[2]
-                sample_size = int(sample_size.rstrip(";"))
+                sample_size = line.rstrip(";").split(" ")[2]
+                sample_size = int(sample_size)
                 continue
 
             if line.lstrip().lower().startswith("deviceid"):
@@ -58,14 +60,14 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 continue
 
             if line.lstrip().lower().startswith("setupid"):
-                setup_id_value = line.split('"')
-                setup_id = SetupId(name=setup_id_value[1], date=setup_id_value[2])
+                setup_id_value = line.rstrip(";").split('"')
+                setup_id = SetupId(
+                    name=setup_id_value[1].strip(), date=setup_id_value[2].strip()
+                )
                 continue
 
             if line.lstrip().lower().startswith("stepid"):
                 step_id = line.split('"')[1]
-                tab = re.findall("([0-9]{4})", step_id)
-                layer = int(tab[0] if tab else step_id)
                 continue
 
             if line.lstrip().lower().startswith("orientationmarklocation"):
@@ -79,6 +81,13 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 )
                 continue
 
+            if line.lstrip().lower().startswith("dieorigin"):
+                die_origin_value = line.rstrip(";").split()
+                die_origin = DieOrigin(
+                    x=float(die_origin_value[1]), y=float(die_origin_value[2])
+                )
+                continue
+
             if line.lstrip().lower().startswith("samplecenterlocation"):
                 sample_center_location_value = line.rstrip(";").split()
                 sample_center_location = SampleCenterLocation(
@@ -89,6 +98,11 @@ def readKlarf(klarf: Path) -> KlarfContent:
 
             if line.lstrip().lower().startswith("waferid"):
                 wafer_id = line.split('"')[1]
+                continue
+
+            if line.lstrip().lower().startswith("slot"):
+                slot_values = line.rstrip(";").split()
+                slot = int(slot_values[1])
                 continue
 
             if line.lstrip().lower().startswith("defectrecordspec"):
@@ -109,6 +123,7 @@ def readKlarf(klarf: Path) -> KlarfContent:
                     if "ROUGHBINNUMBER" in parameters
                     else -1
                 )
+
                 column_finebin = (
                     parameters.index("FINEBINNUMBER") - 1
                     if "FINEBINNUMBER" in parameters
@@ -172,7 +187,15 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 if line.rstrip().endswith(";"):
                     next_line_has_coords = False
 
-                    wafers.append(Wafer(id=wafer_id, defects=defects))
+                    wafers.append(
+                        Wafer(
+                            id=wafer_id,
+                            slot=slot,
+                            die_origin=die_origin,
+                            sample_center_location=sample_center_location,
+                            defects=defects,
+                        )
+                    )
 
             if line.lstrip().lower().startswith("summarylist") and not (
                 line.rstrip().endswith(";")
@@ -192,7 +215,6 @@ def readKlarf(klarf: Path) -> KlarfContent:
                     number_of_dies=int(split[3]),
                     number_of_def_dies=int(split[4]),
                 )
-
                 continue
 
             if line.lstrip().lower().startswith("sampletestplan"):
@@ -212,14 +234,14 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 continue
 
     return KlarfContent(
+        file_timestamp=file_timestamp,
         inspection_station_id=inspection_station_id,
         result_timestamp=result_timestamp,
         lot_id=lot_id,
         device_id=device_id,
         sample_size=sample_size,
         step_id=step_id,
-        layer=layer,
-        oml=orientation_mark_location,
+        orientation_mark_location=orientation_mark_location,
         die_pitch=die_pitch,
         setup_id=setup_id,
         has_sample_test_plan=has_sample_test_plan,

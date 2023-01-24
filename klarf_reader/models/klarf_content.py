@@ -15,6 +15,12 @@ class DiePitch:
 
 
 @dataclass
+class DieOrigin:
+    x: float
+    y: float
+
+
+@dataclass
 class SampleCenterLocation:
     x: float
     y: float
@@ -57,12 +63,16 @@ class Summary:
 @dataclass
 class Wafer:
     id: str
+    slot: int
+    die_origin: DieOrigin
+    sample_center_location: SampleCenterLocation
     defects: List[Defect] = field(default_factory=lambda: [])
     summary: Summary = None
 
 
 @dataclass
 class KlarfContent:
+    file_timestamp: str
     inspection_station_id: str
     result_timestamp: str
     lot_id: str
@@ -70,10 +80,9 @@ class KlarfContent:
     sample_size: int
     setup_id: SetupId
     step_id: str
-    layer: int
-    oml: str
+    orientation_mark_location: str
     die_pitch: DiePitch
-    has_sample_test_plan: str
+    has_sample_test_plan: bool
     sample_plan_test: SamplePlanTest
     wafers: List[Wafer] = field(default_factory=lambda: [])
 
