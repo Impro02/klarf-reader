@@ -287,6 +287,6 @@ def convert_coordinates(
     """
 
     x = xindex * die_pitch.x + xrel - sample_center_location.x
-    y = -(yindex * die_pitch.y + yrel - sample_center_location.y)
+    y = yindex * die_pitch.y + yrel - sample_center_location.y
 
     return x, y
