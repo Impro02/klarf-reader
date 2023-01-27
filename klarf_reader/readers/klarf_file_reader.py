@@ -14,6 +14,8 @@ from ..models.klarf_content import (
     Wafer,
 )
 
+ACCEPTED_KLARF_VERSIONS = [1.2]
+
 
 def readKlarf(klarf: Path) -> KlarfContent:
     """this function open, read and parse a klarf file
@@ -34,6 +36,17 @@ def readKlarf(klarf: Path) -> KlarfContent:
     with open(klarf, "r") as f:
         for line in f:
             line: str = line.rstrip("\n")
+            if line.lstrip().lower().startswith("fileversion"):
+                file_version_values = line.rstrip(";").split(" ")
+                file_version = float(
+                    f"{file_version_values[1]}.{file_version_values[2]}"
+                )
+                if file_version not in ACCEPTED_KLARF_VERSIONS:
+                    raise ValueError(
+                        f"Klarf file version not valid (current={file_version} | accepted={ACCEPTED_KLARF_VERSIONS})"
+                    )
+                continue
+
             if line.lstrip().lower().startswith("filetimestamp"):
                 file_timestamp = line[14:33].rstrip(";")
                 continue
