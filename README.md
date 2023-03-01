@@ -10,7 +10,7 @@ pip install klarf-reader
 
 ## How to import Karf-Reader
 
-To access klarf-reader and its functions import it in yout Python code like this:
+To access klarf-reader and its functions import it in your Python code like this:
 
 ```
 from klarf_reader.klarf import Klarf
