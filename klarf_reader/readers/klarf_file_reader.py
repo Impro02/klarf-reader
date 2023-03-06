@@ -34,8 +34,14 @@ def readKlarf(klarf: Path) -> KlarfContent:
     wafers: List[Wafer] = []
 
     with open(klarf, "r") as f:
+        index = 0
         for line in f:
+            index += 1
             line: str = line.rstrip("\n")
+
+            if index == 1 and not line.lstrip().lower().startswith("fileversion"):
+                raise Exception(f"Unable to read this format from klarf")
+
             if line.lstrip().lower().startswith("fileversion"):
                 file_version_values = line.rstrip(";").split(" ")
                 file_version = float(
@@ -247,6 +253,7 @@ def readKlarf(klarf: Path) -> KlarfContent:
                 continue
 
     return KlarfContent(
+        file_version=file_version,
         file_timestamp=file_timestamp,
         inspection_station_id=inspection_station_id,
         result_timestamp=result_timestamp,

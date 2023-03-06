@@ -72,6 +72,7 @@ class Wafer:
 
 @dataclass
 class KlarfContent:
+    file_version: float
     file_timestamp: str
     inspection_station_id: str
     result_timestamp: str
