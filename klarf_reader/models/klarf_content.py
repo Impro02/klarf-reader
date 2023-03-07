@@ -71,7 +71,7 @@ class Wafer:
 
 
 @dataclass
-class KlarfContent:
+class BasicKlarfContent:
     file_version: float
     file_timestamp: str
     inspection_station_id: str
@@ -85,9 +85,17 @@ class KlarfContent:
     die_pitch: DiePitch
     has_sample_test_plan: bool
     sample_plan_test: SamplePlanTest
+
+
+@dataclass
+class KlarfContent(BasicKlarfContent):
     wafers: List[Wafer] = field(default_factory=lambda: [])
 
-    number_of_wafers: int = None
+    @property
+    def number_of_wafers(self) -> int:
+        return len(self.wafers)
 
-    def __post_init__(self):
-        self.number_of_wafers = len(self.wafers)
+
+@dataclass
+class SingleKlarfContent(BasicKlarfContent):
+    wafer: Wafer
