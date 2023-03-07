@@ -5,7 +5,12 @@ version = "0.2.3"
 setup(
     name="klarf-reader",
     version=version,
-    packages=["klarf_reader", "klarf_reader.models", "klarf_reader.readers"],
+    packages=[
+        "klarf_reader",
+        "klarf_reader.models",
+        "klarf_reader.readers",
+        "klarf_reader.utils",
+    ],
     install_requires=[
         "numpy",
     ],
