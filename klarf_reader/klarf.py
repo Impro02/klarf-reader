@@ -12,7 +12,7 @@ class Klarf:
         return klarf_file_reader.readKlarf(klarf=filepath)[0]
 
     @staticmethod
-    def load_from_file_with_raw_contents(
+    def load_from_file_with_raw_content(
         filepath: Path,
     ) -> Tuple[KlarfContent, List[str]]:
         return klarf_file_reader.readKlarf(klarf=filepath)
