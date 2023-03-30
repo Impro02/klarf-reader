@@ -9,7 +9,7 @@ from .readers import klarf_file_reader
 class Klarf:
     @staticmethod
     def load_from_file(filepath: Path) -> KlarfContent:
-        return klarf_file_reader.readKlarf(klarf=filepath)[0]
+        return Klarf.load_from_file_with_raw_content(filepath=filepath)[0]
 
     @staticmethod
     def load_from_file_with_raw_content(
