@@ -17,7 +17,7 @@ from ..models.klarf_content import (
 ACCEPTED_KLARF_VERSIONS = [1.2]
 
 
-def readKlarf(klarf: Path) -> KlarfContent:
+def readKlarf(klarf: Path) -> Tuple[KlarfContent, List[str]]:
     """this function open, read and parse a klarf file
 
     Args:
@@ -34,8 +34,10 @@ def readKlarf(klarf: Path) -> KlarfContent:
     wafers: List[Wafer] = []
 
     with open(klarf, "r") as f:
+        contents = f.readlines()
+
         index = 0
-        for line in f:
+        for line in contents:
             index += 1
             line: str = line.rstrip("\n")
 
@@ -252,21 +254,24 @@ def readKlarf(klarf: Path) -> KlarfContent:
                     next_line_has_sample_test_plan = False
                 continue
 
-    return KlarfContent(
-        file_version=file_version,
-        file_timestamp=file_timestamp,
-        inspection_station_id=inspection_station_id,
-        result_timestamp=result_timestamp,
-        lot_id=lot_id,
-        device_id=device_id,
-        sample_size=sample_size,
-        step_id=step_id,
-        orientation_mark_location=orientation_mark_location,
-        die_pitch=die_pitch,
-        setup_id=setup_id,
-        has_sample_test_plan=has_sample_test_plan,
-        sample_plan_test=SamplePlanTest(x=sample_plan_test_x, y=sample_plan_test_y),
-        wafers=wafers,
+    return (
+        KlarfContent(
+            file_version=file_version,
+            file_timestamp=file_timestamp,
+            inspection_station_id=inspection_station_id,
+            result_timestamp=result_timestamp,
+            lot_id=lot_id,
+            device_id=device_id,
+            sample_size=sample_size,
+            step_id=step_id,
+            orientation_mark_location=orientation_mark_location,
+            die_pitch=die_pitch,
+            setup_id=setup_id,
+            has_sample_test_plan=has_sample_test_plan,
+            sample_plan_test=SamplePlanTest(x=sample_plan_test_x, y=sample_plan_test_y),
+            wafers=wafers,
+        ),
+        contents,
     )
 
 
