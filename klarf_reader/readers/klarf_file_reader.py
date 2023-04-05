@@ -20,7 +20,11 @@ from ..models.klarf_content import (
 ACCEPTED_KLARF_VERSIONS = [1.2]
 
 
-def readKlarf(klarf: Path) -> Tuple[KlarfContent, List[str]]:
+def readKlarf(
+    klarf: Path,
+    custom_columns_lot: List[str] = None,
+    custom_columns_defects: List[str] = None,
+) -> Tuple[KlarfContent, List[str]]:
     """this function open, read and parse a klarf file
 
     Args:
@@ -36,25 +40,65 @@ def readKlarf(klarf: Path) -> Tuple[KlarfContent, List[str]]:
     with open(klarf, "r") as f:
         raw_content = f.readlines()
 
-    return convert_raw_to_klarf_content(raw_content=raw_content)
+    return convert_raw_to_klarf_content(
+        raw_content=raw_content,
+        custom_columns_lot=custom_columns_lot,
+        custom_columns_defects=custom_columns_defects,
+    )
 
 
 def convert_raw_to_klarf_content(
     raw_content: List[str],
+    custom_columns_lot: List[str] = None,
+    custom_columns_defects: List[str] = None,
 ) -> Tuple[KlarfContent, List[str]]:
+
+    RAW_DEFECT_COLUMNS = [
+        "DEFECTID",
+        "XREL",
+        "YREL",
+        "XINDEX",
+        "YINDEX",
+        "XSIZE",
+        "YSIZE",
+        "DEFECTAREA",
+    ]
+
     setup_id = "no_setup"
     next_line_has_coords, next_line_has_numb = False, False
     has_sample_test_plan, next_line_has_sample_test_plan = False, False
     sample_plan_test_x, sample_plan_test_y = [], []
     wafers: List[Wafer] = []
 
+    column_custom_atribute_defect = []
+
+    if custom_columns_lot is None:
+        custom_columns_lot = []
+
+    if custom_columns_defects is None:
+        custom_columns_defects = []
+
     index = 0
+    custom_columns_found = False
+    custom_columns_lot_dict = {}
     for line in raw_content:
         index += 1
         line: str = line.rstrip("\n")
 
         if index == 1 and not line.lstrip().lower().startswith("fileversion"):
             raise Exception(f"Unable to read this format from klarf")
+
+        for item in custom_columns_lot:
+            if line.lstrip().lower().startswith(item.lower()):
+                attribute_values = line.rstrip(";").split()
+                custom_columns_lot_dict[item] = attribute_values[1]
+                custom_columns_found = True
+
+                break
+
+        if custom_columns_found:
+            custom_columns_found = False
+            continue
 
         if line.lstrip().lower().startswith("fileversion"):
             file_version_values = line.rstrip(";").split(" ")
@@ -140,26 +184,17 @@ def convert_raw_to_klarf_content(
             line_without_space = re.sub("\s+", " ", line).strip()
             parameters = line_without_space.strip().split(" ")
 
-            column_defect_id = parameters.index("DEFECTID") - 1
-            column_x_rel = parameters.index("XREL") - 1
-            column_y_rel = parameters.index("YREL") - 1
-            column_x_index = parameters.index("XINDEX") - 1
-            column_y_index = parameters.index("YINDEX") - 1
-            column_x_size = parameters.index("XSIZE") - 1
-            column_y_size = parameters.index("YSIZE") - 1
-            column_defect_area = parameters.index("DEFECTAREA") - 1
+            defect_columns = {
+                column: parameters.index(column) - 1
+                for column in RAW_DEFECT_COLUMNS
+                if column in parameters
+            }
+            defect_columns_custom = {
+                column: parameters.index(column) - 1
+                for column in custom_columns_defects
+                if column in parameters
+            }
 
-            column_roughbin = (
-                parameters.index("ROUGHBINNUMBER") - 1
-                if "ROUGHBINNUMBER" in parameters
-                else -1
-            )
-
-            column_finebin = (
-                parameters.index("FINEBINNUMBER") - 1
-                if "FINEBINNUMBER" in parameters
-                else -1
-            )
             continue
 
         if line.lstrip().lower().startswith("defectlist") and not (
@@ -173,45 +208,45 @@ def convert_raw_to_klarf_content(
             if line.startswith(" "):
                 defect_parameters = line.strip().split()
 
-                defect_id = int(defect_parameters[column_defect_id - 1])
-                x_rel = float(defect_parameters[column_x_rel - 1])
-                y_rel = float(defect_parameters[column_y_rel - 1])
-                x_index = int(defect_parameters[column_x_index - 1])
-                y_index = int(defect_parameters[column_y_index - 1])
-                x_size = float(defect_parameters[column_x_size - 1])
-                y_size = float(defect_parameters[column_y_size - 1])
-                area = float(defect_parameters[column_defect_area - 1])
+                defect_paramters_values = {
+                    k.lower(): defect_parameters[v - 1]
+                    for k, v in defect_columns.items()
+                }
 
-                val_roughbin, val_finebin = None, None
-
-                if column_roughbin > 0:
-                    val_roughbin = int(defect_parameters[column_roughbin - 1])
-
-                if column_finebin > 0:
-                    val_finebin = int(defect_parameters[column_finebin - 1])
+                defect_paramters_custom_values = {
+                    k.lower(): defect_parameters[v - 1]
+                    for k, v in defect_columns_custom.items()
+                }
 
                 x, y = convert_coordinates(
                     die_pitch=die_pitch,
                     sample_center_location=sample_center_location,
-                    xrel=x_rel,
-                    yrel=y_rel,
-                    xindex=x_index,
-                    yindex=y_index,
+                    xrel=float(defect_paramters_values.get("xrel")),
+                    yrel=float(defect_paramters_values.get("yrel")),
+                    xindex=int(defect_paramters_values.get("xindex")),
+                    yindex=int(defect_paramters_values.get("yindex")),
                 )
+
+                roughbin = defect_paramters_values.get("roughbin")
+                roughbin = int(roughbin) if roughbin is not None else -1
+
+                finebin = defect_paramters_values.get("finebin")
+                finebin = int(finebin) if finebin is not None else -1
 
                 defects.append(
                     Defect(
-                        id=defect_id,
-                        x_rel=x_rel,
-                        y_rel=y_rel,
-                        x_index=x_index,
-                        y_index=y_index,
-                        x_size=x_size,
-                        y_size=y_size,
-                        area=area,
-                        roughbin=val_roughbin,
-                        finebin=val_finebin,
+                        id=int(defect_paramters_values.get("defectid")),
+                        x_rel=float(defect_paramters_values.get("xrel")),
+                        y_rel=float(defect_paramters_values.get("yrel")),
+                        x_index=int(defect_paramters_values.get("xindex")),
+                        y_index=int(defect_paramters_values.get("yindex")),
+                        x_size=float(defect_paramters_values.get("xsize")),
+                        y_size=float(defect_paramters_values.get("ysize")),
+                        area=float(defect_paramters_values.get("defectarea")),
+                        roughbin=roughbin,
+                        finebin=finebin,
                         point=(x, y),
+                        custom_attribute=defect_paramters_custom_values,
                     )
                 )
 
@@ -280,6 +315,7 @@ def convert_raw_to_klarf_content(
             has_sample_test_plan=has_sample_test_plan,
             sample_plan_test=SamplePlanTest(x=sample_plan_test_x, y=sample_plan_test_y),
             wafers=wafers,
+            custom_attribute=custom_columns_lot_dict,
         ),
         raw_content,
     )

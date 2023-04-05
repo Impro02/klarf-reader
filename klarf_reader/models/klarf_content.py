@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from dataclasses import dataclass, field
 
 
@@ -45,6 +45,7 @@ class Defect:
     roughbin: int
     finebin: int
     point: Tuple[float, float] = field(default_factory=lambda: [])
+    custom_attribute:  Dict[str, any] = None
 
 
 @dataclass
@@ -85,6 +86,7 @@ class BasicKlarfContent:
     die_pitch: DiePitch
     has_sample_test_plan: bool
     sample_plan_test: SamplePlanTest
+    custom_attribute: Dict[str, any] = None
 
 
 @dataclass
@@ -98,4 +100,4 @@ class KlarfContent(BasicKlarfContent):
 
 @dataclass
 class SingleKlarfContent(BasicKlarfContent):
-    wafer: Wafer
+    wafer: Wafer = None
