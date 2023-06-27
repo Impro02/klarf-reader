@@ -64,6 +64,11 @@ def convert_raw_to_klarf_content(
         "XSIZE",
         "YSIZE",
         "DEFECTAREA",
+        "DSIZE",
+        "CLASSNUMBER",
+        "TEST",
+        "CLUSTERNUMBER",
+        "IMAGECOUNT",
     ]
 
     setup_id = "no_setup"
@@ -233,7 +238,7 @@ def convert_raw_to_klarf_content(
 
         if next_line_has_coords:
             if line.startswith(" "):
-                defect_parameters = line.strip().split()
+                defect_parameters = line.strip().split(";")[0].split()
 
                 defect_paramters_values = {
                     k.lower(): defect_parameters[v - 1]
@@ -270,6 +275,13 @@ def convert_raw_to_klarf_content(
                         x_size=float(defect_paramters_values.get("xsize")),
                         y_size=float(defect_paramters_values.get("ysize")),
                         area=float(defect_paramters_values.get("defectarea")),
+                        d_size=float(defect_paramters_values.get("dsize")),
+                        class_number=int(defect_paramters_values.get("classnumber")),
+                        test_id=int(defect_paramters_values.get("test")),
+                        cluster_number=int(
+                            defect_paramters_values.get("clusternumber")
+                        ),
+                        image_count=int(defect_paramters_values.get("imagecount")),
                         roughbin=roughbin,
                         finebin=finebin,
                         point=(x, y),

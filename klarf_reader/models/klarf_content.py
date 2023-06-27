@@ -42,6 +42,11 @@ class Defect:
     x_size: float
     y_size: float
     area: float
+    d_size: float
+    class_number: int
+    test_id: int
+    cluster_number: int
+    image_count: int
     roughbin: int
     finebin: int
     point: Tuple[float, float] = field(default_factory=lambda: [])
