@@ -68,6 +68,8 @@ def convert_raw_to_klarf_content(
         "CLASSNUMBER",
         "TEST",
         "CLUSTERNUMBER",
+        "ROUGHBINNUMBER",
+        "FINEBINNUMBER",
         "IMAGECOUNT",
     ]
 
@@ -259,11 +261,11 @@ def convert_raw_to_klarf_content(
                     yindex=int(defect_paramters_values.get("yindex")),
                 )
 
-                roughbin = defect_paramters_values.get("roughbin")
-                roughbin = int(roughbin) if roughbin is not None else -1
+                roughbin = defect_paramters_values.get("roughbinnumber")
+                roughbin = int(roughbin) if roughbin is not None else 0
 
-                finebin = defect_paramters_values.get("finebin")
-                finebin = int(finebin) if finebin is not None else -1
+                finebin = defect_paramters_values.get("finebinnumber")
+                finebin = int(finebin) if finebin is not None else 0
 
                 defects.append(
                     Defect(
