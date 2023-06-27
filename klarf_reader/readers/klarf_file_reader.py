@@ -9,11 +9,13 @@ from ..models.klarf_content import (
     Defect,
     DieOrigin,
     DiePitch,
+    InspectionStationId,
     KlarfContent,
     SampleCenterLocation,
     SamplePlanTest,
     SetupId,
     Summary,
+    Test,
     Wafer,
 )
 
@@ -22,8 +24,8 @@ ACCEPTED_KLARF_VERSIONS = [1.2]
 
 def readKlarf(
     klarf: Path,
-    custom_columns_lot: List[str] = None,
-    custom_columns_defects: List[str] = None,
+    custom_columns_wafer: List[str] = None,
+    custom_columns_defect: List[str] = None,
 ) -> Tuple[KlarfContent, List[str]]:
     """this function open, read and parse a klarf file
 
@@ -42,15 +44,15 @@ def readKlarf(
 
     return convert_raw_to_klarf_content(
         raw_content=raw_content,
-        custom_columns_lot=custom_columns_lot,
-        custom_columns_defects=custom_columns_defects,
+        custom_columns_wafer=custom_columns_wafer,
+        custom_columns_defect=custom_columns_defect,
     )
 
 
 def convert_raw_to_klarf_content(
     raw_content: List[str],
-    custom_columns_lot: List[str] = None,
-    custom_columns_defects: List[str] = None,
+    custom_columns_wafer: List[str] = None,
+    custom_columns_defect: List[str] = None,
 ) -> Tuple[KlarfContent, List[str]]:
 
     RAW_DEFECT_COLUMNS = [
@@ -69,18 +71,17 @@ def convert_raw_to_klarf_content(
     has_sample_test_plan, next_line_has_sample_test_plan = False, False
     sample_plan_test_x, sample_plan_test_y = [], []
     wafers: List[Wafer] = []
+    tests: List[Test] = []
 
-    column_custom_atribute_defect = []
+    if custom_columns_wafer is None:
+        custom_columns_wafer = []
 
-    if custom_columns_lot is None:
-        custom_columns_lot = []
-
-    if custom_columns_defects is None:
-        custom_columns_defects = []
+    if custom_columns_defect is None:
+        custom_columns_defect = []
 
     index = 0
     custom_columns_found = False
-    custom_columns_lot_dict = {}
+    custom_columns_wafer_dict = {}
     for line in raw_content:
         index += 1
         line: str = line.rstrip("\n")
@@ -88,10 +89,10 @@ def convert_raw_to_klarf_content(
         if index == 1 and not line.lstrip().lower().startswith("fileversion"):
             raise Exception(f"Unable to read this format from klarf")
 
-        for item in custom_columns_lot:
+        for item in custom_columns_wafer:
             if line.lstrip().lower().startswith(item.lower()):
                 attribute_values = line.rstrip(";").split()
-                custom_columns_lot_dict[item] = attribute_values[1]
+                custom_columns_wafer_dict[item] = attribute_values[1]
                 custom_columns_found = True
 
                 break
@@ -114,7 +115,15 @@ def convert_raw_to_klarf_content(
             continue
 
         if line.lstrip().lower().startswith("inspectionstationid"):
-            inspection_station_id = line.split('"')[-2]
+            inspection_station_id = line.split(";")[0].split(" ")
+            inspection_station_id = [id.strip('"') for id in inspection_station_id]
+            inspection_station_id = inspection_station_id[1:4]
+
+            inspection_station_id = InspectionStationId(*inspection_station_id)
+            continue
+
+        if line.lstrip().lower().startswith("sampletype"):
+            sample_type = line.rstrip(";").split()[1]
             continue
 
         if line.lstrip().lower().startswith("resulttimestamp"):
@@ -143,6 +152,10 @@ def convert_raw_to_klarf_content(
 
         if line.lstrip().lower().startswith("stepid"):
             step_id = line.split('"')[1]
+            continue
+
+        if line.lstrip().lower().startswith("sampleorientationmarktype"):
+            sample_orientation_mark_type = line.rstrip(";").split()[1]
             continue
 
         if line.lstrip().lower().startswith("orientationmarklocation"):
@@ -180,6 +193,20 @@ def convert_raw_to_klarf_content(
             slot = int(slot_values[1])
             continue
 
+        if line.lstrip().lower().startswith("inspectiontest"):
+            inspection_test = line.rstrip(";").split()
+            inspection_test = int(inspection_test[1])
+            continue
+
+        if line.lstrip().lower().startswith("areapertest"):
+            area_per_test = line.rstrip(";").split()
+            area_per_test = float(area_per_test[1])
+
+            tests.append(
+                Test(id=inspection_test, area=area_per_test),
+            )
+            continue
+
         if line.lstrip().lower().startswith("defectrecordspec"):
             line_without_space = re.sub("\s+", " ", line).strip()
             parameters = line_without_space.strip().split(" ")
@@ -191,7 +218,7 @@ def convert_raw_to_klarf_content(
             }
             defect_columns_custom = {
                 column: parameters.index(column) - 1
-                for column in custom_columns_defects
+                for column in custom_columns_defect
                 if column in parameters
             }
 
@@ -260,8 +287,12 @@ def convert_raw_to_klarf_content(
                         die_origin=die_origin,
                         sample_center_location=sample_center_location,
                         defects=defects,
+                        tests=tests.copy(),
+                        custom_attribute=custom_columns_wafer_dict,
                     )
                 )
+
+                tests.clear()
 
         if line.lstrip().lower().startswith("summarylist") and not (
             line.rstrip().endswith(";")
@@ -304,18 +335,19 @@ def convert_raw_to_klarf_content(
             file_version=file_version,
             file_timestamp=file_timestamp,
             inspection_station_id=inspection_station_id,
+            sample_type=sample_type,
             result_timestamp=result_timestamp,
             lot_id=lot_id,
             device_id=device_id,
             sample_size=sample_size,
             step_id=step_id,
+            sample_orientation_mark_type=sample_orientation_mark_type,
             orientation_mark_location=orientation_mark_location,
             die_pitch=die_pitch,
             setup_id=setup_id,
             has_sample_test_plan=has_sample_test_plan,
             sample_plan_test=SamplePlanTest(x=sample_plan_test_x, y=sample_plan_test_y),
             wafers=wafers,
-            custom_attribute=custom_columns_lot_dict,
         ),
         raw_content,
     )

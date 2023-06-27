@@ -45,7 +45,7 @@ class Defect:
     roughbin: int
     finebin: int
     point: Tuple[float, float] = field(default_factory=lambda: [])
-    custom_attribute:  Dict[str, any] = None
+    custom_attribute: Dict[str, any] = None
 
 
 @dataclass
@@ -62,31 +62,47 @@ class Summary:
 
 
 @dataclass
+class Test:
+    id: int
+    area: float
+
+
+@dataclass
 class Wafer:
     id: str
     slot: int
     die_origin: DieOrigin
     sample_center_location: SampleCenterLocation
     defects: List[Defect] = field(default_factory=lambda: [])
+    tests: List[Test] = field(default_factory=lambda: [])
+    custom_attribute: Dict[str, any] = None
     summary: Summary = None
+
+
+@dataclass
+class InspectionStationId:
+    mfg: str
+    model: str
+    id: str
 
 
 @dataclass
 class BasicKlarfContent:
     file_version: float
     file_timestamp: str
-    inspection_station_id: str
+    sample_type: str
+    inspection_station_id: InspectionStationId
     result_timestamp: str
     lot_id: str
     device_id: str
     sample_size: int
     setup_id: SetupId
     step_id: str
+    sample_orientation_mark_type: str
     orientation_mark_location: str
     die_pitch: DiePitch
     has_sample_test_plan: bool
     sample_plan_test: SamplePlanTest
-    custom_attribute: Dict[str, any] = None
 
 
 @dataclass
