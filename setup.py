@@ -2,9 +2,6 @@ from setuptools import setup
 
 version = "0.3.5"
 
-with open("requirements.txt") as f:
-    requirements = f.read().splitlines()
-
 setup(
     name="klarf-reader",
     version=version,
@@ -14,7 +11,7 @@ setup(
         "klarf_reader.readers",
         "klarf_reader.utils",
     ],
-    install_requires=requirements,
+    install_requires=["numba"],
     license="MIT",
     author="Maxime MARTIN",
     author_email="maxime.martin02@hotmail.fr",
