@@ -1,6 +1,9 @@
 from setuptools import setup
 
-version = "0.3.4"
+version = "0.3.5"
+
+with open("requirements.txt") as f:
+    requirements = f.read().splitlines()
 
 setup(
     name="klarf-reader",
@@ -11,9 +14,7 @@ setup(
         "klarf_reader.readers",
         "klarf_reader.utils",
     ],
-    install_requires=[
-        "numpy",
-    ],
+    install_requires=requirements,
     license="MIT",
     author="Maxime MARTIN",
     author_email="maxime.martin02@hotmail.fr",
