@@ -74,6 +74,7 @@ def convert_raw_to_klarf_content(
     ]
 
     setup_id = "no_setup"
+    sample_type = None
     next_line_has_coords, next_line_has_numb = False, False
     has_sample_test_plan, next_line_has_sample_test_plan = False, False
     sample_plan_test_x, sample_plan_test_y = [], []
@@ -231,12 +232,12 @@ def convert_raw_to_klarf_content(
 
             continue
 
-        if line.lstrip().lower().startswith("defectlist") and not (
-            line.rstrip().endswith(";")
-        ):
+        if line.lstrip().lower().startswith("defectlist"):
             next_line_has_coords = True
             defects = []
-            continue
+
+            if not line.rstrip().endswith(";"):
+                continue
 
         if next_line_has_coords:
             if line.startswith(" "):
