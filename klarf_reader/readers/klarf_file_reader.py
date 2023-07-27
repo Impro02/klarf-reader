@@ -26,6 +26,7 @@ def readKlarf(
     klarf: Path,
     custom_columns_wafer: List[str] = None,
     custom_columns_defect: List[str] = None,
+    parse_summary: bool = True,
 ) -> Tuple[KlarfContent, List[str]]:
     """this function open, read and parse a klarf file
 
@@ -46,6 +47,7 @@ def readKlarf(
         raw_content=raw_content,
         custom_columns_wafer=custom_columns_wafer,
         custom_columns_defect=custom_columns_defect,
+        parse_summary=parse_summary,
     )
 
 
@@ -53,6 +55,7 @@ def convert_raw_to_klarf_content(
     raw_content: List[str],
     custom_columns_wafer: List[str] = None,
     custom_columns_defect: List[str] = None,
+    parse_summary: bool = True,
 ) -> Tuple[KlarfContent, List[str]]:
 
     RAW_DEFECT_COLUMNS = [
@@ -312,8 +315,10 @@ def convert_raw_to_klarf_content(
 
                 tests.clear()
 
-        if line.lstrip().lower().startswith("summarylist") and not (
-            line.rstrip().endswith(";")
+        if (
+            parse_summary
+            and line.lstrip().lower().startswith("summarylist")
+            and not (line.rstrip().endswith(";"))
         ):
             next_line_has_numb = True
             continue

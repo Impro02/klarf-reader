@@ -63,7 +63,11 @@ class Summary:
     percent_of_def_die: float = None
 
     def __post_init__(self):
-        self.percent_of_def_die = float(self.number_of_def_dies / self.number_of_dies)
+        self.percent_of_def_die = (
+            float(self.number_of_def_dies / self.number_of_dies)
+            if self.number_of_dies != 0
+            else 0
+        )
 
 
 @dataclass
