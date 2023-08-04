@@ -274,6 +274,11 @@ def convert_raw_to_klarf_content(
                 image_count = defect_paramters_values.get("imagecount")
                 image_count = int(image_count) if image_count is not None else 0
 
+                cluster_number = defect_paramters_values.get("clusternumber")
+                cluster_number = (
+                    int(cluster_number) if cluster_number is not None else 0
+                )
+
                 defects.append(
                     Defect(
                         id=int(defect_paramters_values.get("defectid")),
@@ -287,9 +292,7 @@ def convert_raw_to_klarf_content(
                         d_size=float(defect_paramters_values.get("dsize")),
                         class_number=int(defect_paramters_values.get("classnumber")),
                         test_id=int(defect_paramters_values.get("test")),
-                        cluster_number=int(
-                            defect_paramters_values.get("clusternumber")
-                        ),
+                        cluster_number=cluster_number,
                         image_count=image_count,
                         roughbin=roughbin,
                         finebin=finebin,
