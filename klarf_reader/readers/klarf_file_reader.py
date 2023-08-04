@@ -19,7 +19,7 @@ from ..models.klarf_content import (
     Wafer,
 )
 
-ACCEPTED_KLARF_VERSIONS = [1.2]
+ACCEPTED_KLARF_VERSIONS = [1.1, 1.2]
 
 
 def readKlarf(
@@ -76,10 +76,15 @@ def convert_raw_to_klarf_content(
         "IMAGECOUNT",
     ]
 
+    device_id = None
     setup_id = "no_setup"
     sample_type = None
     next_line_has_coords, next_line_has_numb = False, False
-    has_sample_test_plan, next_line_has_sample_test_plan = False, False
+    has_sample_test_plan, next_line_has_sample_test_plan, skip_next_sample_test_plan = (
+        False,
+        False,
+        False,
+    )
     sample_plan_test_x, sample_plan_test_y = [], []
     wafers: List[Wafer] = []
     tests: List[Test] = []
@@ -328,7 +333,7 @@ def convert_raw_to_klarf_content(
 
         if next_line_has_numb and line.startswith(" "):
             next_line_has_numb = False
-            linewithoutSpace = re.sub("\s+", " ", line).strip()
+            linewithoutSpace = re.sub("[\s;]+", " ", line).strip()
 
             split = linewithoutSpace.split()
 
@@ -340,7 +345,9 @@ def convert_raw_to_klarf_content(
             )
             continue
 
-        if line.lstrip().lower().startswith("sampletestplan"):
+        if not skip_next_sample_test_plan and line.lstrip().lower().startswith(
+            "sampletestplan"
+        ):
             next_line_has_sample_test_plan = True
             has_sample_test_plan = True
         if next_line_has_sample_test_plan:
@@ -354,6 +361,7 @@ def convert_raw_to_klarf_content(
                 sample_plan_test_y.append(y)
             if line.rstrip().endswith(";"):
                 next_line_has_sample_test_plan = False
+                skip_next_sample_test_plan = True
             continue
 
     return (
