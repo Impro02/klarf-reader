@@ -93,11 +93,7 @@ def convert_raw_to_klarf_content(
     device_id = None
     setup_id = "no_setup"
     sample_type = None
-    next_line_has_defect_list, next_line_has_coords, next_line_has_numb = (
-        False,
-        False,
-        False,
-    )
+    next_line_has_coords, next_line_has_numb = (False, False)
     has_sample_test_plan, next_line_has_sample_test_plan, skip_next_sample_test_plan = (
         False,
         False,
@@ -118,7 +114,7 @@ def convert_raw_to_klarf_content(
     custom_columns_wafer_dict = {}
     for line in raw_content:
         index += 1
-        line: str = line.rstrip("\n")
+        line = line.rstrip("\n")
 
         if index == 1 and not line.lstrip().lower().startswith("fileversion"):
             raise Exception(f"Unable to read this format from klarf")
@@ -242,7 +238,6 @@ def convert_raw_to_klarf_content(
             continue
 
         if line.lstrip().lower().startswith("defectrecordspec"):
-            next_line_has_defect_list = True
             defects = []
 
             line_without_space = re.sub("\s+", " ", line).strip()
@@ -269,6 +264,7 @@ def convert_raw_to_klarf_content(
 
         if next_line_has_coords:
             if line.startswith(" "):
+
                 defect_parameters = line.strip().split(";")[0].split()
 
                 defect_paramters_values = {
@@ -326,24 +322,24 @@ def convert_raw_to_klarf_content(
                     )
                 )
 
-                if line.rstrip().endswith(";"):
-                    next_line_has_coords = False
+            if line.rstrip().endswith(";"):
+                next_line_has_coords = False
 
-                    wafers.append(
-                        Wafer(
-                            id=wafer_id,
-                            slot=slot,
-                            die_origin=die_origin,
-                            sample_center_location=sample_center_location,
-                            defects=(defect for defect in defects)
-                            if defects_as_generator
-                            else defects,
-                            tests=tests.copy(),
-                            custom_attribute=custom_columns_wafer_dict,
-                        )
+                wafers.append(
+                    Wafer(
+                        id=wafer_id,
+                        slot=slot,
+                        die_origin=die_origin,
+                        sample_center_location=sample_center_location,
+                        defects=(defect for defect in defects)
+                        if defects_as_generator
+                        else defects,
+                        tests=tests.copy(),
+                        custom_attribute=custom_columns_wafer_dict,
                     )
+                )
 
-                    tests.clear()
+                tests.clear()
 
         if (
             parse_summary
