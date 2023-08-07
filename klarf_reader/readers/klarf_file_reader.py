@@ -2,7 +2,7 @@
 import re
 import os
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, Generator, List, Tuple
 
 # MODELS
 from ..models.klarf_content import (
@@ -22,12 +22,19 @@ from ..models.klarf_content import (
 ACCEPTED_KLARF_VERSIONS = [1.1, 1.2]
 
 
+def _get_raw_content(klarf: Path):
+    with open(klarf, "r") as f:
+        for line in f.readlines():
+            yield line
+
+
 def readKlarf(
     klarf: Path,
     custom_columns_wafer: List[str] = None,
     custom_columns_defect: List[str] = None,
     parse_summary: bool = True,
-) -> Tuple[KlarfContent, List[str]]:
+    defects_as_generator: bool = False,
+) -> Tuple[KlarfContent, Generator[str, None, None],]:
     """this function open, read and parse a klarf file
 
     Args:
@@ -40,23 +47,27 @@ def readKlarf(
     if not os.path.exists(klarf):
         raise Exception(f"{klarf=} does not exists")
 
-    with open(klarf, "r") as f:
-        raw_content = f.readlines()
+    raw_content = _get_raw_content(klarf)
 
-    return convert_raw_to_klarf_content(
-        raw_content=raw_content,
-        custom_columns_wafer=custom_columns_wafer,
-        custom_columns_defect=custom_columns_defect,
-        parse_summary=parse_summary,
+    return (
+        convert_raw_to_klarf_content(
+            raw_content=_get_raw_content(klarf),
+            custom_columns_wafer=custom_columns_wafer,
+            custom_columns_defect=custom_columns_defect,
+            parse_summary=parse_summary,
+            defects_as_generator=defects_as_generator,
+        ),
+        raw_content,
     )
 
 
 def convert_raw_to_klarf_content(
-    raw_content: List[str],
+    raw_content: Generator[str, None, None],
     custom_columns_wafer: List[str] = None,
     custom_columns_defect: List[str] = None,
     parse_summary: bool = True,
-) -> Tuple[KlarfContent, List[str]]:
+    defects_as_generator: bool = False,
+) -> KlarfContent:
 
     RAW_DEFECT_COLUMNS = [
         "DEFECTID",
@@ -315,7 +326,9 @@ def convert_raw_to_klarf_content(
                         slot=slot,
                         die_origin=die_origin,
                         sample_center_location=sample_center_location,
-                        defects=defects,
+                        defects=(defect for defect in defects)
+                        if defects_as_generator
+                        else defects,
                         tests=tests.copy(),
                         custom_attribute=custom_columns_wafer_dict,
                     )
@@ -364,26 +377,23 @@ def convert_raw_to_klarf_content(
                 skip_next_sample_test_plan = True
             continue
 
-    return (
-        KlarfContent(
-            file_version=file_version,
-            file_timestamp=file_timestamp,
-            inspection_station_id=inspection_station_id,
-            sample_type=sample_type,
-            result_timestamp=result_timestamp,
-            lot_id=lot_id,
-            device_id=device_id,
-            sample_size=sample_size,
-            step_id=step_id,
-            sample_orientation_mark_type=sample_orientation_mark_type,
-            orientation_mark_location=orientation_mark_location,
-            die_pitch=die_pitch,
-            setup_id=setup_id,
-            has_sample_test_plan=has_sample_test_plan,
-            sample_plan_test=SamplePlanTest(x=sample_plan_test_x, y=sample_plan_test_y),
-            wafers=wafers,
-        ),
-        raw_content,
+    return KlarfContent(
+        file_version=file_version,
+        file_timestamp=file_timestamp,
+        inspection_station_id=inspection_station_id,
+        sample_type=sample_type,
+        result_timestamp=result_timestamp,
+        lot_id=lot_id,
+        device_id=device_id,
+        sample_size=sample_size,
+        step_id=step_id,
+        sample_orientation_mark_type=sample_orientation_mark_type,
+        orientation_mark_location=orientation_mark_location,
+        die_pitch=die_pitch,
+        setup_id=setup_id,
+        has_sample_test_plan=has_sample_test_plan,
+        sample_plan_test=SamplePlanTest(x=sample_plan_test_x, y=sample_plan_test_y),
+        wafers=wafers,
     )
 
 

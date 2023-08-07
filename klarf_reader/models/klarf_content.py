@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Any, Dict, Generator, List, Tuple, Union
 from dataclasses import dataclass, field
 
 
@@ -82,7 +82,9 @@ class Wafer:
     slot: int
     die_origin: DieOrigin
     sample_center_location: SampleCenterLocation
-    defects: List[Defect] = field(default_factory=lambda: [])
+    defects: Union[List[Defect], Generator[Defect, Any, None]] = field(
+        default_factory=lambda: []
+    )
     tests: List[Test] = field(default_factory=lambda: [])
     custom_attribute: Dict[str, any] = None
     summary: Summary = None
