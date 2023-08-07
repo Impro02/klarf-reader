@@ -49,16 +49,19 @@ def readKlarf(
 
     raw_content = _get_raw_content(klarf)
 
-    return (
-        convert_raw_to_klarf_content(
-            raw_content=_get_raw_content(klarf),
-            custom_columns_wafer=custom_columns_wafer,
-            custom_columns_defect=custom_columns_defect,
-            parse_summary=parse_summary,
-            defects_as_generator=defects_as_generator,
-        ),
-        raw_content,
+    klarf_content = convert_raw_to_klarf_content(
+        raw_content=_get_raw_content(klarf),
+        custom_columns_wafer=custom_columns_wafer,
+        custom_columns_defect=custom_columns_defect,
+        parse_summary=parse_summary,
+        defects_as_generator=defects_as_generator,
     )
+
+    klarf_content.wafers = list(
+        {item.id: item for item in klarf_content.wafers}.values()
+    )
+
+    return klarf_content, raw_content
 
 
 def convert_raw_to_klarf_content(
@@ -90,7 +93,11 @@ def convert_raw_to_klarf_content(
     device_id = None
     setup_id = "no_setup"
     sample_type = None
-    next_line_has_coords, next_line_has_numb = False, False
+    next_line_has_defect_list, next_line_has_coords, next_line_has_numb = (
+        False,
+        False,
+        False,
+    )
     has_sample_test_plan, next_line_has_sample_test_plan, skip_next_sample_test_plan = (
         False,
         False,
@@ -235,6 +242,9 @@ def convert_raw_to_klarf_content(
             continue
 
         if line.lstrip().lower().startswith("defectrecordspec"):
+            next_line_has_defect_list = True
+            defects = []
+
             line_without_space = re.sub("\s+", " ", line).strip()
             parameters = line_without_space.strip().split(" ")
 
@@ -253,7 +263,6 @@ def convert_raw_to_klarf_content(
 
         if line.lstrip().lower().startswith("defectlist"):
             next_line_has_coords = True
-            defects = []
 
             if not line.rstrip().endswith(";"):
                 continue
@@ -317,24 +326,24 @@ def convert_raw_to_klarf_content(
                     )
                 )
 
-            if line.rstrip().endswith(";"):
-                next_line_has_coords = False
+                if line.rstrip().endswith(";"):
+                    next_line_has_coords = False
 
-                wafers.append(
-                    Wafer(
-                        id=wafer_id,
-                        slot=slot,
-                        die_origin=die_origin,
-                        sample_center_location=sample_center_location,
-                        defects=(defect for defect in defects)
-                        if defects_as_generator
-                        else defects,
-                        tests=tests.copy(),
-                        custom_attribute=custom_columns_wafer_dict,
+                    wafers.append(
+                        Wafer(
+                            id=wafer_id,
+                            slot=slot,
+                            die_origin=die_origin,
+                            sample_center_location=sample_center_location,
+                            defects=(defect for defect in defects)
+                            if defects_as_generator
+                            else defects,
+                            tests=tests.copy(),
+                            custom_attribute=custom_columns_wafer_dict,
+                        )
                     )
-                )
 
-                tests.clear()
+                    tests.clear()
 
         if (
             parse_summary
