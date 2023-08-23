@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.4.2"
+version = "0.4.3"
 
 setup(
     name="klarf-reader",
@@ -16,6 +16,8 @@ setup(
     author="Maxime MARTIN",
     author_email="maxime.martin02@hotmail.fr",
     description="A project to parse klarf file and get klarf content as dataclass",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     url="https://github.com/Impro02/klarf_reader",
     download_url="https://github.com/Impro02/klarf_reader/archive/refs/tags/%s.tar.gz"
     % version,
